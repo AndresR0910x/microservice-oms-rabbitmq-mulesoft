@@ -6,13 +6,13 @@ import jakarta.persistence.*;
 @Table(name = "stock")
 public class Stock {
     @Id
-    private String productoId;
+    private Long itemId;
 
-    private Integer cantidad;
+    private Integer quantity;
 
-    // Getters y Setters
-    public String getProductoId() { return productoId; }
-    public void setProductoId(String productoId) { this.productoId = productoId; }
-    public Integer getCantidad() { return cantidad; }
-    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
+    // Getters and Setters
+    public Long getItemId() { return itemId; }
+    public void setItemId(Long itemId) { this.itemId = itemId; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }
