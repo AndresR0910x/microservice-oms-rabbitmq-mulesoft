@@ -2,7 +2,6 @@ package com.dispenser.orders_service.controller;
 
 import com.dispenser.orders_service.model.Orden;
 import com.dispenser.orders_service.service.OrdenService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +21,11 @@ public class OrdenController {
     @GetMapping
     public List<Orden> obtenerTodasLasOrdenes() {
         return ordenService.obtenerTodasLasOrdenes();
+    }
+
+    @GetMapping("/{id}")
+    public Orden obtenerOrdenPorId(@PathVariable Long id) {
+        return ordenService.obtenerOrdenPorId(id); // Nuevo método que necesitamos agregar en OrdenService
     }
 
     @PutMapping("/{id}")

@@ -1,11 +1,12 @@
 package com.dispenser.orders_service.model;
 
-import com.dispenser.orders_service.dto.Cliente;
+import com.dispenser.orders_service.dto.ClienteDTO;
+import com.dispenser.orders_service.dto.OrdenProductoDTO;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "orden")
@@ -18,44 +19,61 @@ public class Orden {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_orden")
     private Long idOrden;
- 
+
     private String fecha;
     private String estado;
+
     @Column(name = "id_cliente")
     private Long idCliente;
 
     @Transient
-    private Cliente cliente;
+    private ClienteDTO cliente;
 
-    // Métodos getters adicionales para los campos que necesitas
+    @Transient
+    private Set<OrdenProductoDTO> productos = new HashSet<>();
+
+    // Métodos explícitos
     public Long getIdCliente() {
-        return this.idCliente;
+        return idCliente;
     }
 
-    public String getFecha() {
-        return this.fecha;
+    public void setIdCliente(Long idCliente) {
+        this.idCliente = idCliente;
     }
 
-    public String getEstado() {
-        return this.estado;
-    }
-
-    public void setCliente(Cliente cliente) {
+    public void setCliente(ClienteDTO cliente) {
         this.cliente = cliente;
-        if (cliente != null) {
-            this.idCliente = cliente.getIdCliente();
+    }
+
+    public Set<OrdenProductoDTO> getProductos() {
+        return productos;
+    }
+
+    public void setProductos(Set<OrdenProductoDTO> productos) {
+        this.productos = productos;
+    }
+
+    public void addProducto(OrdenProductoDTO ordenProductoDTO) {
+        if (ordenProductoDTO != null) {
+            if (this.idOrden != null && ordenProductoDTO.getIdOrden() == null) {
+                ordenProductoDTO.setIdOrden(this.idOrden);
+            }
+            productos.add(ordenProductoDTO);
         }
     }
 
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
+    public void removeProducto(Long productoId) {
+        productos.removeIf(op -> op != null && op.getIdProducto() != null && op.getIdProducto().equals(productoId));
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public Cliente getCliente() {
-        return this.cliente;
+    // Método para actualizar idOrden en productos después de guardar
+    public void updateProductIds() {
+        if (idOrden != null) {
+            for (OrdenProductoDTO op : productos) {
+                if (op.getIdOrden() == null) {
+                    op.setIdOrden(idOrden);
+                }
+            }
+        }
     }
 }
