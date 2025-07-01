@@ -25,6 +25,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navItems = [
     { path: '/', icon: <Home size={20} />, label: 'Dashboard', color: 'text-blue-600' },
     { path: '/create-client', icon: <UserPlus size={20} />, label: 'Crear Cliente', color: 'text-green-600' },
+    { path: '/crear-producto', icon: <UserPlus size={20} />, label: 'Agregar productos', color: 'text-green-600' }, 
     { path: '/inventory', icon: <Package size={20} />, label: 'Inventario', color: 'text-purple-600' },
     { path: '/cart', icon: <ShoppingCart size={20} />, label: 'Carrito', color: 'text-orange-600' },
     { path: '/orders', icon: <ClipboardList size={20} />, label: 'Órdenes', color: 'text-indigo-600' },

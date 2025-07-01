@@ -32,7 +32,7 @@ public class OrdenService {
 
     private final String CLIENTE_SERVICE_URL = "http://CLIENTE-SERVICE/api/clientes/";
     private final String PRODUCTO_SERVICE_URL = "http://PRODUCT-SERVICE/api/productos/";
-    private final String DISPATCH_SERVICE_URL = "http://DISPATCH_SERVICE/api/despachos/";
+    private final String DISPATCH_SERVICE_URL = "http://DISPATCH-SERVICE/api/despachos/";
 
     public Orden crearOrden(Orden orden) {
         if (orden.getIdCliente() == null) {

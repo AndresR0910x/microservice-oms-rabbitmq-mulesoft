@@ -3,6 +3,9 @@ package com.dispenser.dispatch_service.controller;
 import com.dispenser.dispatch_service.dto.DespachoDTO;
 import com.dispenser.dispatch_service.model.Despacho;
 import com.dispenser.dispatch_service.service.DespachoService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +46,15 @@ public class DespachoController {
         return ResponseEntity.ok(convertToDTO(despacho));
     }
 
+    @GetMapping
+    public ResponseEntity<List<DespachoDTO>> obtenerTodosLosDespachos() {
+        List<Despacho> despachos = despachoService.obtenerTodosLosDespachos();
+        List<DespachoDTO> dtoList = despachos.stream()
+                .map(this::convertToDTO)
+                .toList();
+        return ResponseEntity.ok(dtoList);
+    }
+
     private DespachoDTO convertToDTO(Despacho despacho) {
         DespachoDTO dto = new DespachoDTO();
         dto.setIdDespacho(despacho.getIdDespacho());
@@ -52,4 +64,6 @@ public class DespachoController {
         dto.setDireccionEntrega(despacho.getDireccionEntrega());
         return dto;
     }
+
+
 }

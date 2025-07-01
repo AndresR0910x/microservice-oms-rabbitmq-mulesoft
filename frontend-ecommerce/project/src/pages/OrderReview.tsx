@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -6,15 +7,35 @@ import Badge from '../components/ui/Badge';
 import Select from '../components/ui/Select';
 import { Search, Eye, Calendar, Filter, ClipboardList, User, Package } from 'lucide-react';
 
+interface Producto {
+  idProducto: number;
+  nombre: string;
+  precio: string;
+  stock: number;
+  imagenUrl: string | null;
+  categoria: string;
+}
+
+interface Cliente {
+  nombre: string;
+  direccion: string;
+  contacto: string;
+  id_cliente: number;
+}
+
+interface OrderProduct {
+  idOrdenProducto: number;
+  idProducto: number;
+  cantidad: number;
+}
+
 interface Order {
-  id: string;
-  clientName: string;
-  clientId: string;
-  date: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  total: number;
-  items: number;
-  paymentStatus: 'pending' | 'paid' | 'failed';
+  idOrden: number;
+  fecha: string;
+  estado: 'pendiente' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  idCliente: number;
+  cliente: Cliente;
+  orderProducts: OrderProduct[];
 }
 
 const OrderReview: React.FC = () => {
@@ -22,63 +43,44 @@ const OrderReview: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const orders: Order[] = [
-    {
-      id: 'ORD-001',
-      clientName: 'Supermercado Central',
-      clientId: 'CLI-001',
-      date: '2024-01-15',
-      status: 'processing',
-      total: 1234.50,
-      items: 15,
-      paymentStatus: 'paid'
-    },
-    {
-      id: 'ORD-002',
-      clientName: 'Tienda La Esquina',
-      clientId: 'CLI-002',
-      date: '2024-01-14',
-      status: 'shipped',
-      total: 567.80,
-      items: 8,
-      paymentStatus: 'paid'
-    },
-    {
-      id: 'ORD-003',
-      clientName: 'Minimarket Express',
-      clientId: 'CLI-003',
-      date: '2024-01-14',
-      status: 'delivered',
-      total: 890.25,
-      items: 12,
-      paymentStatus: 'paid'
-    },
-    {
-      id: 'ORD-004',
-      clientName: 'Bodega San Juan',
-      clientId: 'CLI-004',
-      date: '2024-01-13',
-      status: 'pending',
-      total: 2345.75,
-      items: 25,
-      paymentStatus: 'pending'
-    },
-    {
-      id: 'ORD-005',
-      clientName: 'Distribuidora Norte',
-      clientId: 'CLI-005',
-      date: '2024-01-12',
-      status: 'cancelled',
-      total: 456.30,
-      items: 6,
-      paymentStatus: 'failed'
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const ordersResponse = await fetch('http://localhost:8080/api/ordenes');
+        if (!ordersResponse.ok) {
+          throw new Error(`Error al obtener órdenes: ${ordersResponse.statusText}`);
+        }
+        const ordersData = await ordersResponse.json();
+        setOrders(ordersData);
+
+        const productosResponse = await fetch('http://localhost:8080/api/productos');
+        if (!productosResponse.ok) {
+          throw new Error(`Error al obtener productos: ${productosResponse.statusText}`);
+        }
+        const productosData = await productosResponse.json();
+        setProductos(productosData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const statusOptions = [
     { value: '', label: 'Todos los estados' },
-    { value: 'pending', label: 'Pendiente' },
+    { value: 'pendiente', label: 'Pendiente' },
     { value: 'processing', label: 'En Proceso' },
     { value: 'shipped', label: 'Enviado' },
     { value: 'delivered', label: 'Entregado' },
@@ -86,17 +88,17 @@ const OrderReview: React.FC = () => {
   ];
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.clientId.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = !statusFilter || order.status === statusFilter;
-    const matchesDate = !dateFilter || order.date === dateFilter;
+    const matchesSearch = order.cliente.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         order.idOrden.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         order.idCliente.toString().toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = !statusFilter || order.estado === statusFilter;
+    const matchesDate = !dateFilter || order.fecha === dateFilter;
     return matchesSearch && matchesStatus && matchesDate;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <Badge variant="warning">Pendiente</Badge>;
+      case 'pendiente': return <Badge variant="warning">Pendiente</Badge>;
       case 'processing': return <Badge variant="info">En Proceso</Badge>;
       case 'shipped': return <Badge variant="info">Enviado</Badge>;
       case 'delivered': return <Badge variant="success">Entregado</Badge>;
@@ -105,25 +107,68 @@ const OrderReview: React.FC = () => {
     }
   };
 
-  const getPaymentBadge = (status: string) => {
-    switch (status) {
-      case 'paid': return <Badge variant="success">Pagado</Badge>;
-      case 'pending': return <Badge variant="warning">Pendiente</Badge>;
-      case 'failed': return <Badge variant="danger">Fallido</Badge>;
-      default: return <Badge variant="default">{status}</Badge>;
+  const getTotal = (order: Order) => {
+    return order.orderProducts.reduce((sum, item) => {
+      const product = productos.find(p => p.idProducto === item.idProducto);
+      const price = product ? parseFloat(product.precio) : 0;
+      return sum + (price * item.cantidad);
+    }, 0);
+  };
+
+  const getItemsCount = (order: Order) => {
+    return order.orderProducts.reduce((sum, item) => sum + item.cantidad, 0);
+  };
+
+  const handlePayment = async (order: Order) => {
+    const paymentData = {
+      idOrden: order.idOrden,
+      monto: getTotal(order),
+      metodoPago: 'tarjeta',
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/api/cobros', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al procesar el pago: ${response.statusText}`);
+      }
+
+      alert('Pago realizado con éxito');
+      const updatedOrders = orders.map(o =>
+        o.idOrden === order.idOrden ? { ...o, estado: 'processing' } : o
+      );
+      setOrders(updatedOrders);
+      setSelectedOrder(null);
+    } catch (err) {
+      console.error('Error processing payment:', err);
+      alert('Error al procesar el pago. Verifique la consola para más detalles.');
     }
   };
 
-  const orderDetails = {
-    'ORD-001': {
-      products: [
-        { name: 'Coca Cola 2L', quantity: 5, price: 2.50 },
-        { name: 'Pan Integral', quantity: 10, price: 1.80 },
-        { name: 'Arroz Premium 1kg', quantity: 20, price: 3.20 }
-      ],
-      notes: 'Entrega urgente solicitada para mañana temprano'
-    }
-  };
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto text-center py-12">
+        <ClipboardList className="mx-auto mb-4 text-gray-400" size={64} />
+        <p className="text-gray-600">Cargando órdenes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="max-w-6xl mx-auto text-center py-12">
+        <ClipboardList className="mx-auto text-red-400 mb-4" size={64} />
+        <h3 className="text-lg font-semibold text-red-900 mb-2">Error</h3>
+        <p className="text-gray-600">{error}</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -192,10 +237,7 @@ const OrderReview: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estado
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Pago
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -205,11 +247,11 @@ const OrderReview: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={order.idOrden} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{order.id}</div>
-                      <div className="text-sm text-gray-500">{order.items} productos</div>
+                      <div className="text-sm font-medium text-gray-900">{order.idOrden}</div>
+                      <div className="text-sm text-gray-500">{getItemsCount(order)} productos</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -220,22 +262,19 @@ const OrderReview: React.FC = () => {
                         </div>
                       </div>
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">{order.clientName}</div>
-                        <div className="text-sm text-gray-500">{order.clientId}</div>
+                        <div className="text-sm font-medium text-gray-900">{order.cliente.nombre}</div>
+                        <div className="text-sm text-gray-500">ID: {order.idCliente}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(order.date).toLocaleDateString('es-ES')}
+                    {new Date(order.fecha).toLocaleDateString('es-ES')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(order.status)}
+                    {getStatusBadge(order.estado)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getPaymentBadge(order.paymentStatus)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${order.total.toFixed(2)}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
+                    ${getTotal(order).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Button
@@ -261,7 +300,7 @@ const OrderReview: React.FC = () => {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-2xl font-bold text-gray-900">Detalles de la Orden</h3>
-                <p className="text-gray-600">{selectedOrder.id}</p>
+                <p className="text-gray-600">Orden #{selectedOrder.idOrden}</p>
               </div>
               <Button
                 variant="outline"
@@ -279,11 +318,19 @@ const OrderReview: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Nombre:</span>
-                    <p className="font-medium">{selectedOrder.clientName}</p>
+                    <p className="font-medium">{selectedOrder.cliente.nombre}</p>
                   </div>
                   <div>
                     <span className="text-gray-600">ID Cliente:</span>
-                    <p className="font-medium">{selectedOrder.clientId}</p>
+                    <p className="font-medium">{selectedOrder.idCliente}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Dirección:</span>
+                    <p className="font-medium">{selectedOrder.cliente.direccion}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Contacto:</span>
+                    <p className="font-medium">{selectedOrder.cliente.contacto}</p>
                   </div>
                 </div>
               </div>
@@ -292,43 +339,53 @@ const OrderReview: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-blue-50 p-4 rounded-xl">
                   <h4 className="font-semibold text-gray-900 mb-2">Estado de la Orden</h4>
-                  {getStatusBadge(selectedOrder.status)}
-                </div>
-                <div className="bg-green-50 p-4 rounded-xl">
-                  <h4 className="font-semibold text-gray-900 mb-2">Estado del Pago</h4>
-                  {getPaymentBadge(selectedOrder.paymentStatus)}
+                  {getStatusBadge(selectedOrder.estado)}
                 </div>
               </div>
 
               {/* Products */}
-              {orderDetails[selectedOrder.id as keyof typeof orderDetails] && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Productos</h4>
-                  <div className="space-y-2">
-                    {orderDetails[selectedOrder.id as keyof typeof orderDetails].products.map((product, index) => (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-3">Productos</h4>
+                <div className="space-y-2">
+                  {selectedOrder.orderProducts.map((product, index) => {
+                    const matchedProduct = productos.find(p => p.idProducto === product.idProducto);
+                    const price = matchedProduct ? parseFloat(matchedProduct.precio) : 0;
+                    return (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-50/50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <Package className="text-gray-400" size={16} />
-                          <span className="font-medium">{product.name}</span>
+                          <span className="font-medium">{matchedProduct ? matchedProduct.nombre : `Producto ID ${product.idProducto}`}</span>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">${(product.quantity * product.price).toFixed(2)}</p>
-                          <p className="text-sm text-gray-600">{product.quantity} x ${product.price}</p>
+                          <p className="font-semibold">${(price * product.cantidad).toFixed(2)}</p>
+                          <p className="text-sm text-gray-600">{product.cantidad} x ${price.toFixed(2)}</p>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Total y Botón de Pago */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-semibold text-gray-900">Total:</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      ${getTotal(selectedOrder).toFixed(2)}
+                    </span>
                   </div>
                 </div>
-              )}
-
-              {/* Total */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900">Total:</span>
-                  <span className="text-2xl font-bold text-green-600">
-                    ${selectedOrder.total.toFixed(2)}
-                  </span>
-                </div>
+                {selectedOrder.estado === 'pendiente' && (
+                  <Button
+                    variant="success"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => handlePayment(selectedOrder)}
+                  >
+                    Pagar
+                  </Button>
+                )}
               </div>
             </div>
           </Card>
@@ -339,10 +396,10 @@ const OrderReview: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {[
           { label: 'Total Órdenes', value: orders.length, color: 'blue' },
-          { label: 'Pendientes', value: orders.filter(o => o.status === 'pending').length, color: 'yellow' },
-          { label: 'En Proceso', value: orders.filter(o => o.status === 'processing').length, color: 'indigo' },
-          { label: 'Entregadas', value: orders.filter(o => o.status === 'delivered').length, color: 'green' },
-          { label: 'Canceladas', value: orders.filter(o => o.status === 'cancelled').length, color: 'red' }
+          { label: 'Pendientes', value: orders.filter(o => o.estado === 'pendiente').length, color: 'yellow' },
+          { label: 'En Proceso', value: orders.filter(o => o.estado === 'processing').length, color: 'indigo' },
+          { label: 'Entregadas', value: orders.filter(o => o.estado === 'delivered').length, color: 'green' },
+          { label: 'Canceladas', value: orders.filter(o => o.estado === 'cancelled').length, color: 'red' }
         ].map((stat, index) => (
           <Card key={index} className="text-center">
             <div className={`text-2xl font-bold text-${stat.color}-600`}>{stat.value}</div>

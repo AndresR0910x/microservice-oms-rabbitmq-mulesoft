@@ -9,6 +9,7 @@ import OrderReview from './pages/OrderReview';
 import Dispatch from './pages/Dispatch';
 import Shipping from './pages/Shipping';
 import Payments from './pages/Payments';
+import CreateProduct from './pages/CreateProduct';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/dispatch" element={<Dispatch />} />
         <Route path="/shipping" element={<Shipping />} />
         <Route path="/payments" element={<Payments />} />
+        <Route path="/crear-producto" element={<CreateProduct />} />
       </Routes>
     </Layout>
   );

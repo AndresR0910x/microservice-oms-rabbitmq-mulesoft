@@ -1,26 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import { User, Mail, Phone, MapPin, CreditCard, Save, UserPlus } from 'lucide-react';
+import { User, Mail, MapPin, Save, UserPlus } from 'lucide-react';
+
+interface Cliente {
+  id_cliente: number;
+  nombre: string;
+  direccion: string;
+  contacto: string;
+}
 
 const CreateClient: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    idNumber: '',
-    phone: '',
-    email: '',
-    address: '',
-    city: '',
-    postalCode: ''
+    nombre: '',
+    direccion: '',
+    contacto: ''
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loadingClientes, setLoadingClientes] = useState(false);
+
+  // Fetch clientes al montar el componente
+  useEffect(() => {
+    const fetchClientes = async () => {
+      setLoadingClientes(true);
+      try {
+        const response = await fetch('http://localhost:8080/api/clientes', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener los clientes');
+        }
+
+        const data = await response.json();
+        setClientes(data);
+      } catch (error) {
+        console.error('Error fetching clientes:', error);
+      } finally {
+        setLoadingClientes(false);
+      }
+    };
+
+    fetchClientes();
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -29,30 +62,18 @@ const CreateClient: React.FC = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio';
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = 'El nombre es obligatorio';
     }
 
-    if (!formData.idNumber.trim()) {
-      newErrors.idNumber = 'La cédula/RUC es obligatoria';
-    } else if (formData.idNumber.length < 8) {
-      newErrors.idNumber = 'La cédula/RUC debe tener al menos 8 caracteres';
+    if (!formData.direccion.trim()) {
+      newErrors.direccion = 'La dirección es obligatoria';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'El teléfono es obligatorio';
-    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Formato de teléfono inválido';
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'El correo es obligatorio';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Formato de correo inválido';
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = 'La dirección es obligatoria';
+    if (!formData.contacto.trim()) {
+      newErrors.contacto = 'El contacto es obligatorio';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contacto)) {
+      newErrors.contacto = 'Formato de correo inválido';
     }
 
     setErrors(newErrors);
@@ -67,23 +88,36 @@ const CreateClient: React.FC = () => {
     }
 
     setLoading(true);
-    
-    // Simulate API call
+    setSuccessMessage('');
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Reset form
+      const response = await fetch('http://localhost:8080/api/clientes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear el cliente');
+      }
+
+      // Resetear el formulario
       setFormData({
-        name: '',
-        idNumber: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: '',
-        postalCode: ''
+        nombre: '',
+        direccion: '',
+        contacto: ''
       });
       
-      alert('Cliente creado exitosamente');
+      setSuccessMessage('Cliente creado exitosamente');
+
+      // Refrescar la lista de clientes
+      const refreshedResponse = await fetch('http://localhost:8080/api/clientes');
+      if (refreshedResponse.ok) {
+        const data = await refreshedResponse.json();
+        setClientes(data);
+      }
     } catch (error) {
       alert('Error al crear el cliente');
     } finally {
@@ -106,79 +140,42 @@ const CreateClient: React.FC = () => {
         </p>
       </div>
 
+      {successMessage && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
+          {successMessage}
+        </div>
+      )}
+
       <Card title="Información del Cliente" subtitle="Complete todos los campos obligatorios">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Client Information */}
+          <div className="space-y-4">
             <Input
               label="Nombre Completo *"
-              placeholder="Ej: Juan Pérez Distribuciones"
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              error={errors.name}
+              placeholder="Ej: David Rodriguez"
+              value={formData.nombre}
+              onChange={(e) => handleInputChange('nombre', e.target.value)}
+              error={errors.nombre}
               icon={<User size={18} />}
             />
             
             <Input
-              label="Cédula / RUC *"
-              placeholder="Ej: 1234567890"
-              value={formData.idNumber}
-              onChange={(e) => handleInputChange('idNumber', e.target.value)}
-              error={errors.idNumber}
-              icon={<CreditCard size={18} />}
-            />
-          </div>
-
-          {/* Contact Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Teléfono *"
-              placeholder="Ej: +593 99 123 4567"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              error={errors.phone}
-              icon={<Phone size={18} />}
-            />
-            
-            <Input
-              label="Correo Electrónico *"
-              type="email"
-              placeholder="Ej: cliente@empresa.com"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              error={errors.email}
-              icon={<Mail size={18} />}
-            />
-          </div>
-
-          {/* Address Information */}
-          <div className="space-y-4">
-            <Input
               label="Dirección *"
-              placeholder="Ej: Av. Principal 123, Sector Norte"
-              value={formData.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              error={errors.address}
+              placeholder="Ej: Solanda O4-150"
+              value={formData.direccion}
+              onChange={(e) => handleInputChange('direccion', e.target.value)}
+              error={errors.direccion}
               icon={<MapPin size={18} />}
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Ciudad"
-                placeholder="Ej: Quito"
-                value={formData.city}
-                onChange={(e) => handleInputChange('city', e.target.value)}
-                icon={<MapPin size={18} />}
-              />
-              
-              <Input
-                label="Código Postal"
-                placeholder="Ej: 170101"
-                value={formData.postalCode}
-                onChange={(e) => handleInputChange('postalCode', e.target.value)}
-                icon={<MapPin size={18} />}
-              />
-            </div>
+            <Input
+              label="Contacto (Correo) *"
+              placeholder="Ej: andres.example@email.com"
+              value={formData.contacto}
+              onChange={(e) => handleInputChange('contacto', e.target.value)}
+              error={errors.contacto}
+              icon={<Mail size={18} />}
+            />
           </div>
 
           {/* Form Actions */}
@@ -190,15 +187,12 @@ const CreateClient: React.FC = () => {
               className="flex-1"
               onClick={() => {
                 setFormData({
-                  name: '',
-                  idNumber: '',
-                  phone: '',
-                  email: '',
-                  address: '',
-                  city: '',
-                  postalCode: ''
+                  nombre: '',
+                  direccion: '',
+                  contacto: ''
                 });
                 setErrors({});
+                setSuccessMessage('');
               }}
             >
               Limpiar Formulario
@@ -218,30 +212,34 @@ const CreateClient: React.FC = () => {
         </form>
       </Card>
 
-      {/* Help Section */}
-      <Card title="Información Adicional" gradient>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Campos Obligatorios</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Nombre completo del cliente</li>
-              <li>• Cédula o RUC válido</li>
-              <li>• Número de teléfono</li>
-              <li>• Correo electrónico</li>
-              <li>• Dirección completa</li>
-            </ul>
+      {/* Clients List Section */}
+      <Card title="Nuestros Clientes" gradient>
+        {loadingClientes ? (
+          <p className="text-gray-600">Cargando clientes...</p>
+        ) : clientes.length === 0 ? (
+          <p className="text-gray-600">No hay clientes registrados.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-gray-600">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-4 py-2 text-left font-semibold">Nombre</th>
+                  <th className="px-4 py-2 text-left font-semibold">Dirección</th>
+                  <th className="px-4 py-2 text-left font-semibold">Contacto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientes.map(cliente => (
+                  <tr key={cliente.id_cliente} className="border-t">
+                    <td className="px-4 py-2">{cliente.nombre}</td>
+                    <td className="px-4 py-2">{cliente.direccion}</td>
+                    <td className="px-4 py-2">{cliente.contacto}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Consejos</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Verifique los datos antes de guardar</li>
-              <li>• Use el formato correcto para teléfono</li>
-              <li>• La dirección debe ser completa y clara</li>
-              <li>• El correo será usado para notificaciones</li>
-            </ul>
-          </div>
-        </div>
+        )}
       </Card>
     </div>
   );

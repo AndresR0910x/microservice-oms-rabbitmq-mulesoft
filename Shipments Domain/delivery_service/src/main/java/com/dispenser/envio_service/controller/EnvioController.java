@@ -31,8 +31,8 @@ public class EnvioController {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    private final String ORDERS_SERVICE_URL = "http://localhost:8081/api/ordenes/";
-    private final String DESPACHO_SERVICE_URL = "http://localhost:8085/api/despachos/obtenerPorIdOrden";
+    private final String ORDERS_SERVICE_URL = "http://ORDERS-SERVICE/api/ordenes/";
+    private final String DESPACHO_SERVICE_URL = "http://DISPATCH-SERVICE/api/despachos/obtenerPorIdOrden";
 
     @PostMapping
     public ResponseEntity<Envio> crearEnvio(@RequestParam Long idOrden) {

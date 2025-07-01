@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -78,4 +79,7 @@ public class DespachoService {
         logger.info("Despacho guardado con ID {}", savedDespacho.getIdDespacho());
         return savedDespacho;
     }
+    public List<Despacho> obtenerTodosLosDespachos() {
+    return despachoRepository.findAll(); 
+}
 }
