@@ -26,52 +26,52 @@ const OrderReview: React.FC = () => {
   const orders: Order[] = [
     {
       id: 'ORD-001',
-      clientName: 'Supermercado Central',
+      clientName: 'Tech Store Central',
       clientId: 'CLI-001',
       date: '2024-01-15',
       status: 'processing',
-      total: 1234.50,
-      items: 15,
+      total: 899.87,
+      items: 3,
       paymentStatus: 'paid'
     },
     {
       id: 'ORD-002',
-      clientName: 'Tienda La Esquina',
+      clientName: 'Gadgets y Más',
       clientId: 'CLI-002',
       date: '2024-01-14',
       status: 'shipped',
-      total: 567.80,
-      items: 8,
+      total: 149.89,
+      items: 2,
       paymentStatus: 'paid'
     },
     {
       id: 'ORD-003',
-      clientName: 'Minimarket Express',
+      clientName: 'Oficina Express',
       clientId: 'CLI-003',
       date: '2024-01-14',
       status: 'delivered',
-      total: 890.25,
-      items: 12,
+      total: 59.90,
+      items: 1,
       paymentStatus: 'paid'
     },
     {
       id: 'ORD-004',
-      clientName: 'Bodega San Juan',
+      clientName: 'Computodo',
       clientId: 'CLI-004',
       date: '2024-01-13',
       status: 'pending',
-      total: 2345.75,
-      items: 25,
+      total: 699.00,
+      items: 1,
       paymentStatus: 'pending'
     },
     {
       id: 'ORD-005',
-      clientName: 'Distribuidora Norte',
+      clientName: 'Audio Pro',
       clientId: 'CLI-005',
       date: '2024-01-12',
       status: 'cancelled',
-      total: 456.30,
-      items: 6,
+      total: 34.50,
+      items: 1,
       paymentStatus: 'failed'
     }
   ];
@@ -117,11 +117,36 @@ const OrderReview: React.FC = () => {
   const orderDetails = {
     'ORD-001': {
       products: [
-        { name: 'Coca Cola 2L', quantity: 5, price: 2.50 },
-        { name: 'Pan Integral', quantity: 10, price: 1.80 },
-        { name: 'Arroz Premium 1kg', quantity: 20, price: 3.20 }
+        { name: 'Teclado Mecánico RGB', quantity: 1, price: 45.99 },
+        { name: 'Monitor LED 24"', quantity: 2, price: 129.99 },
+        { name: 'Laptop Ultrabook 14"', quantity: 1, price: 699.00 }
       ],
       notes: 'Entrega urgente solicitada para mañana temprano'
+    },
+    'ORD-002': {
+      products: [
+        { name: 'Mouse Inalámbrico', quantity: 1, price: 19.90 },
+        { name: 'Auriculares Bluetooth', quantity: 2, price: 59.90 }
+      ],
+      notes: 'Enviar con factura electrónica'
+    },
+    'ORD-003': {
+      products: [
+        { name: 'Auriculares Bluetooth', quantity: 1, price: 59.90 }
+      ],
+      notes: ''
+    },
+    'ORD-004': {
+      products: [
+        { name: 'Laptop Ultrabook 14"', quantity: 1, price: 699.00 }
+      ],
+      notes: 'Requiere configuración inicial'
+    },
+    'ORD-005': {
+      products: [
+        { name: 'Webcam HD 1080p', quantity: 1, price: 34.50 }
+      ],
+      notes: 'Cliente canceló la orden'
     }
   };
 

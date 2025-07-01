@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
-import Input from '../components/ui/Input';
+//import Input from '../components/ui/Input';
 import { Truck, Package, CheckCircle, Clock, AlertCircle, FileText } from 'lucide-react';
 
 interface DispatchOrder {
@@ -19,11 +19,11 @@ const Dispatch: React.FC = () => {
   const [orders, setOrders] = useState<DispatchOrder[]>([
     {
       id: 'ORD-001',
-      clientName: 'Supermercado Central',
+      clientName: 'Tech Store Central',
       products: [
-        { name: 'Coca Cola 2L', quantity: 5 },
-        { name: 'Pan Integral', quantity: 10 },
-        { name: 'Arroz Premium 1kg', quantity: 20 }
+        { name: 'Teclado Mecánico RGB', quantity: 2 },
+        { name: 'Monitor LED 24"', quantity: 1 },
+        { name: 'Laptop Ultrabook 14"', quantity: 1 }
       ],
       priority: 'high',
       status: 'ready-to-pack',
@@ -32,10 +32,10 @@ const Dispatch: React.FC = () => {
     },
     {
       id: 'ORD-002',
-      clientName: 'Tienda La Esquina',
+      clientName: 'Gadgets y Más',
       products: [
-        { name: 'Leche Entera 1L', quantity: 12 },
-        { name: 'Aceite de Girasol 1L', quantity: 6 }
+        { name: 'Mouse Inalámbrico', quantity: 3 },
+        { name: 'Auriculares Bluetooth', quantity: 2 }
       ],
       priority: 'medium',
       status: 'packing',
@@ -43,10 +43,10 @@ const Dispatch: React.FC = () => {
     },
     {
       id: 'ORD-003',
-      clientName: 'Minimarket Express',
+      clientName: 'Oficina Express',
       products: [
-        { name: 'Detergente Líquido 2L', quantity: 8 },
-        { name: 'Arroz Premium 1kg', quantity: 15 }
+        { name: 'Webcam HD 1080p', quantity: 2 },
+        { name: 'Monitor LED 24"', quantity: 1 }
       ],
       priority: 'low',
       status: 'ready-to-ship',

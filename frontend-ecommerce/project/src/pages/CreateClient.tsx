@@ -84,7 +84,7 @@ const CreateClient: React.FC = () => {
       });
       
       alert('Cliente creado exitosamente');
-    } catch (error) {
+    } catch  {
       alert('Error al crear el cliente');
     } finally {
       setLoading(false);

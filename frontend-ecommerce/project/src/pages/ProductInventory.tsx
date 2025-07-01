@@ -25,74 +25,73 @@ const ProductInventory: React.FC = () => {
   const products: Product[] = [
     {
       id: '1',
-      name: 'Coca Cola 2L',
-      description: 'Bebida gaseosa sabor cola, presentación familiar',
-      category: 'Bebidas',
-      stock: 150,
-      price: 2.50,
-      image: 'https://images.pexels.com/photos/50593/coca-cola-cold-drink-soft-drink-coke-50593.jpeg?auto=compress&cs=tinysrgb&w=300',
+      name: 'Teclado Mecánico RGB',
+      description: 'Teclado mecánico con retroiluminación RGB y switches azules',
+      category: 'Periféricos',
+      stock: 50,
+      price: 45.99,
+      image: 'https://http2.mlstatic.com/D_NQ_NP_820938-MLA80563766270_112024-O.webp',
       status: 'available'
     },
     {
       id: '2',
-      name: 'Pan Integral',
-      description: 'Pan de molde integral, rico en fibra',
-      category: 'Panadería',
-      stock: 25,
-      price: 1.80,
-      image: 'https://images.pexels.com/photos/1775043/pexels-photo-1775043.jpeg?auto=compress&cs=tinysrgb&w=300',
+      name: 'Mouse Inalámbrico',
+      description: 'Mouse ergonómico inalámbrico con sensor óptico de alta precisión',
+      category: 'Periféricos',
+      stock: 20,
+      price: 19.90,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/61LtuGzXeaL._AC_SL1500_.jpg',
       status: 'low-stock'
     },
     {
       id: '3',
-      name: 'Leche Entera 1L',
-      description: 'Leche fresca pasteurizada, alta calidad',
-      category: 'Lácteos',
+      name: 'Monitor LED 24"',
+      description: 'Monitor LED Full HD de 24 pulgadas con tecnología antirreflejo',
+      category: 'Monitores',
       stock: 0,
-      price: 1.20,
-      image: 'https://images.pexels.com/photos/416656/pexels-photo-416656.jpeg?auto=compress&cs=tinysrgb&w=300',
+      price: 129.99,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/81QpkIctqPL._AC_SL1500_.jpg',
       status: 'out-of-stock'
     },
     {
       id: '4',
-      name: 'Arroz Premium 1kg',
-      description: 'Arroz de grano largo, calidad premium',
-      category: 'Granos',
-      stock: 200,
-      price: 3.20,
-      image: 'https://images.pexels.com/photos/723198/pexels-photo-723198.jpeg?auto=compress&cs=tinysrgb&w=300',
+      name: 'Laptop Ultrabook 14"',
+      description: 'Laptop ultradelgada con procesador Intel i5 y 8GB RAM',
+      category: 'Computadoras',
+      stock: 15,
+      price: 699.00,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/71TPda7cwUL._AC_SL1500_.jpg',
       status: 'available'
     },
     {
       id: '5',
-      name: 'Aceite de Girasol 1L',
-      description: 'Aceite vegetal 100% puro de girasol',
-      category: 'Aceites',
-      stock: 80,
-      price: 4.50,
-      image: 'https://images.pexels.com/photos/33783/olive-oil-salad-dressing-cooking-olive.jpg?auto=compress&cs=tinysrgb&w=300',
+      name: 'Auriculares Bluetooth',
+      description: 'Auriculares inalámbricos con cancelación de ruido',
+      category: 'Audio',
+      stock: 35,
+      price: 59.90,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/61CGHv6kmWL._AC_SL1500_.jpg',
       status: 'available'
     },
     {
       id: '6',
-      name: 'Detergente Líquido 2L',
-      description: 'Detergente concentrado para ropa',
-      category: 'Limpieza',
-      stock: 15,
-      price: 6.80,
-      image: 'https://images.pexels.com/photos/4239091/pexels-photo-4239091.jpeg?auto=compress&cs=tinysrgb&w=300',
+      name: 'Webcam HD 1080p',
+      description: 'Cámara web de alta definición para videollamadas',
+      category: 'Accesorios',
+      stock: 8,
+      price: 34.50,
+      image: 'https://http2.mlstatic.com/D_Q_NP_904772-MLA52854278571_122022-O.webp', // webcam HD 1080p corregida
       status: 'low-stock'
     }
   ];
 
   const categories = [
     { value: '', label: 'Todas las categorías' },
-    { value: 'Bebidas', label: 'Bebidas' },
-    { value: 'Panadería', label: 'Panadería' },
-    { value: 'Lácteos', label: 'Lácteos' },
-    { value: 'Granos', label: 'Granos' },
-    { value: 'Aceites', label: 'Aceites' },
-    { value: 'Limpieza', label: 'Limpieza' }
+    { value: 'Periféricos', label: 'Periféricos' },
+    { value: 'Monitores', label: 'Monitores' },
+    { value: 'Computadoras', label: 'Computadoras' },
+    { value: 'Audio', label: 'Audio' },
+    { value: 'Accesorios', label: 'Accesorios' }
   ];
 
   const filteredProducts = products.filter(product => {

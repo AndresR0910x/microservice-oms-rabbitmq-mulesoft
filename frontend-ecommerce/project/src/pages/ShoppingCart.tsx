@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
+//import Input from '../components/ui/Input';
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 
 interface CartItem {
@@ -17,27 +17,27 @@ const ShoppingCartPage: React.FC = () => {
   const [cartItems, setCartItems] = useState<CartItem[]>([
     {
       id: '1',
-      name: 'Coca Cola 2L',
-      price: 2.50,
-      quantity: 3,
-      image: 'https://images.pexels.com/photos/50593/coca-cola-cold-drink-soft-drink-coke-50593.jpeg?auto=compress&cs=tinysrgb&w=300',
-      category: 'Bebidas'
+      name: 'Teclado Mecánico RGB',
+      price: 45.99,
+      quantity: 2,
+      image: 'https://http2.mlstatic.com/D_NQ_NP_820938-MLA80563766270_112024-O.webp',
+      category: 'Periféricos'
     },
     {
       id: '2',
-      name: 'Pan Integral',
-      price: 1.80,
-      quantity: 2,
-      image: 'https://images.pexels.com/photos/1775043/pexels-photo-1775043.jpeg?auto=compress&cs=tinysrgb&w=300',
-      category: 'Panadería'
+      name: 'Mouse Inalámbrico',
+      price: 19.90,
+      quantity: 1,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/61LtuGzXeaL._AC_SL1500_.jpg',
+      category: 'Periféricos'
     },
     {
       id: '4',
-      name: 'Arroz Premium 1kg',
-      price: 3.20,
-      quantity: 5,
-      image: 'https://images.pexels.com/photos/723198/pexels-photo-723198.jpeg?auto=compress&cs=tinysrgb&w=300',
-      category: 'Granos'
+      name: 'Monitor LED 24"',
+      price: 129.99,
+      quantity: 1,
+      image: 'https://images-na.ssl-images-amazon.com/images/I/81QpkIctqPL._AC_SL1500_.jpg',
+      category: 'Monitores'
     }
   ]);
 
