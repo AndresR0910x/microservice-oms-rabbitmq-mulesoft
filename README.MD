@@ -1,10 +1,9 @@
 # Order Management System (OMS) with RabbitMQ and MuleSoft
 
-This project is a scalable and modular **Order Management System (OMS)** designed for **mass consumption businesses**. It demonstrates the integration of **RabbitMQ** as a messaging broker and **MuleSoft** as the middleware platform for connecting and orchestrating services.
+This project is a scalable and modular **Order Management System (OMS)** designed for **mass consumption businesses**. It demonstrates the integration of **RabbitMQ** as a messaging broker.
 
 ## 🔧 Technologies Used
 
-- **MuleSoft Anypoint Platform** – For API integration and orchestration
 - **RabbitMQ** – Message broker to enable asynchronous communication
 - **Java / Spring Boot** *(optional or depending on your stack)* – For backend services
 - **Docker** – For containerized deployment
@@ -15,7 +14,6 @@ This project is a scalable and modular **Order Management System (OMS)** designe
 - Order creation, processing, and status tracking
 - Event-driven architecture using RabbitMQ
 - Reliable and decoupled service communication
-- Scalable integration flows with MuleSoft
 - Ready for deployment in microservices environments
 
 ## 📦 Use Cases
@@ -28,7 +26,6 @@ This project is a scalable and modular **Order Management System (OMS)** designe
 
 ```bash
 /order-api/           # API endpoints for order management
-/mule-integration/    # MuleSoft flows and configurations
 /rabbitmq-config/     # RabbitMQ exchange/queue setup
 /database/            # SQL scripts and DB schema
 /docker/              # Docker Compose and container config
