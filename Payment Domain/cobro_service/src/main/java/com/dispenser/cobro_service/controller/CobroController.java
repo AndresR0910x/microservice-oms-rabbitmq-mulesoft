@@ -6,6 +6,7 @@ import com.dispenser.cobro_service.service.CobroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/cobros")
@@ -32,6 +33,11 @@ public class CobroController {
         Cobro cobro = cobroService.actualizarCobro(idCobro, cobroDTO.getCostoEnvio());
         CobroDTO responseDto = convertToDTO(cobro);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException ex) {
+        return new ResponseEntity<>(ex.getReason(), ex.getStatusCode());
     }
 
     private CobroDTO convertToDTO(Cobro cobro) {

@@ -2,6 +2,8 @@ package com.dispenser.orders_service.model;
 
 import com.dispenser.orders_service.dto.ClienteDTO;
 import com.dispenser.orders_service.dto.OrdenProductoDTO;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,7 +34,11 @@ public class Orden {
     @Transient
     private Set<OrdenProductoDTO> productos = new HashSet<>();
 
-    // Métodos explícitos
+    @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Set<OrdenProducto> orderProducts = new HashSet<>();
+
+    // Métodos existentes...
     public Long getIdCliente() {
         return idCliente;
     }
@@ -53,27 +59,31 @@ public class Orden {
         this.productos = productos;
     }
 
-    public void addProducto(OrdenProductoDTO ordenProductoDTO) {
-        if (ordenProductoDTO != null) {
-            if (this.idOrden != null && ordenProductoDTO.getIdOrden() == null) {
-                ordenProductoDTO.setIdOrden(this.idOrden);
-            }
-            productos.add(ordenProductoDTO);
+    public Set<OrdenProducto> getOrderProducts() {
+        return orderProducts;
+    }
+
+    public void setOrderProducts(Set<OrdenProducto> orderProducts) {
+        this.orderProducts = orderProducts;
+    }
+
+    public void addProducto(OrdenProducto ordenProducto) {
+        if (ordenProducto != null) {
+            ordenProducto.setOrden(this);
+            orderProducts.add(ordenProducto);
         }
     }
 
     public void removeProducto(Long productoId) {
-        productos.removeIf(op -> op != null && op.getIdProducto() != null && op.getIdProducto().equals(productoId));
+        orderProducts.removeIf(op -> op != null && op.getIdProducto() != null && op.getIdProducto().equals(productoId));
     }
 
-    // Método para actualizar idOrden en productos después de guardar
     public void updateProductIds() {
-        if (idOrden != null) {
-            for (OrdenProductoDTO op : productos) {
-                if (op.getIdOrden() == null) {
-                    op.setIdOrden(idOrden);
-                }
-            }
-        }
+        // No necesario con la relación establecida
+    }
+
+    public Orden orElseThrow(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
     }
 }

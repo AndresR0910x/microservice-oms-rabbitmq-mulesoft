@@ -20,7 +20,18 @@ public class Envio {
     @Column(name = "id_despacho")
     private Long idDespacho;
 
+    @Column(name = "id_orden")
+    private Long idOrden;
+
+    @Column(name = "fecha_despacho")
     private LocalDateTime fechaDespacho;
-    private String estado; // Ejemplo: "en preparación", "en tránsito", "entregado"
+
+    @Column(name = "estado")
+    private String estado; // "en preparación", "en tránsito", "enviada", "entregado"
+
+    @Column(name = "direccion_entrega")
+    private String direccionEntrega;
+
+    @Column(name = "correo_usuario")
     private String correoUsuario;
 }

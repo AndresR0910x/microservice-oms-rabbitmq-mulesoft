@@ -1,7 +1,7 @@
 package com.dispenser.dispatch_service.controller;
 
 import com.dispenser.dispatch_service.dto.DespachoDTO;
-import com.dispenser.dispatch_service.model.*;
+import com.dispenser.dispatch_service.model.Despacho;
 import com.dispenser.dispatch_service.service.DespachoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +34,13 @@ public class DespachoController {
         Despacho despacho = despachoService.agendarDespacho(idDespacho, despachoDTO.getFechaDespacho(), despachoDTO.getEstado(), despachoDTO.getDireccionEntrega());
         DespachoDTO responseDto = convertToDTO(despacho);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/obtenerPorIdOrden")
+    public ResponseEntity<DespachoDTO> obtenerPorIdOrden(@RequestParam Long idOrden) {
+        Despacho despacho = despachoService.obtenerDespachoPorIdOrden(idOrden)
+                .orElseThrow(() -> new RuntimeException("Despacho no encontrado para idOrden: " + idOrden));
+        return ResponseEntity.ok(convertToDTO(despacho));
     }
 
     private DespachoDTO convertToDTO(Despacho despacho) {

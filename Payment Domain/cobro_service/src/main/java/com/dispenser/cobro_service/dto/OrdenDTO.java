@@ -12,5 +12,5 @@ public class OrdenDTO {
     private Long idCliente;
     private String fecha;
     private String estado;
-    private Set<OrdenProductoDTO> productos;
+    private Set<OrdenProductoDTO> orderProductos;
 }

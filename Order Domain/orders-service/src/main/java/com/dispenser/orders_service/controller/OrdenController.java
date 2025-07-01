@@ -25,7 +25,7 @@ public class OrdenController {
 
     @GetMapping("/{id}")
     public Orden obtenerOrdenPorId(@PathVariable Long id) {
-        return ordenService.obtenerOrdenPorId(id); // Nuevo método que necesitamos agregar en OrdenService
+        return ordenService.obtenerOrdenPorId(id);
     }
 
     @PutMapping("/{id}")
@@ -36,5 +36,20 @@ public class OrdenController {
     @GetMapping("/cliente/{idCliente}")
     public List<Orden> obtenerOrdenesPorCliente(@PathVariable Long idCliente) {
         return ordenService.obtenerOrdenesPorCliente(idCliente);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminarOrden(@PathVariable Long id) {
+        ordenService.eliminarOrden(id);
+    }
+
+    @GetMapping("/estado/{estado}")
+    public List<Orden> obtenerOrdenesPorEstado(@PathVariable String estado) {
+        return ordenService.obtenerOrdenesPorEstado(estado);
+    }
+
+    @GetMapping("/cliente/{idCliente}/count")
+    public Long contarOrdenesPorCliente(@PathVariable Long idCliente) {
+        return ordenService.contarOrdenesPorCliente(idCliente);
     }
 }

@@ -1,5 +1,6 @@
 package com.dispenser.dispatch_service.model;
 
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,7 +20,10 @@ public class Despacho {
     @Column(name = "id_orden", nullable = false)
     private Long idOrden;
 
-    private String fechaDespacho;
+    private LocalDateTime fechaDespacho;
     private String estado; // Ejemplo: "pendiente", "enviado", "entregado"
     private String direccionEntrega;
+
+    @Column(name = "total_envio")
+    private Double totalEnvio; // Nuevo campo para el total del envío
 }

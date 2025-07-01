@@ -1,5 +1,7 @@
 package com.dispenser.dispatch_service.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +10,7 @@ import lombok.Setter;
 public class DespachoDTO {
     private Long idDespacho;
     private Long idOrden;
-    private String fechaDespacho;
+    private LocalDateTime fechaDespacho;
     private String estado;
     private String direccionEntrega;
 }

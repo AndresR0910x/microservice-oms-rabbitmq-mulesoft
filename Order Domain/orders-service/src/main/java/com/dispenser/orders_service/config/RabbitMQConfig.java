@@ -6,22 +6,26 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-    public static final String EXCHANGE_NAME = "ecommerce.events";
-    public static final String QUEUE_NAME = "inventory.order.created";
-    public static final String ROUTING_KEY = "order.created";
+
+    public static final String ORDER_CREATED_EXCHANGE = "order.created.exchange";
+    public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
+    public static final String ORDER_CREATED_QUEUE = "order.created.queue";
 
     @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(EXCHANGE_NAME);
+    public DirectExchange orderCreatedExchange() {
+        return new DirectExchange(ORDER_CREATED_EXCHANGE);
     }
 
     @Bean
-    public Queue queue() {
-        return new Queue(QUEUE_NAME, true);
+    public Queue orderCreatedQueue() {
+        return QueueBuilder.durable(ORDER_CREATED_QUEUE).build();
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    public Binding orderCreatedBinding(Queue orderCreatedQueue, DirectExchange orderCreatedExchange) {
+        return BindingBuilder
+                .bind(orderCreatedQueue)
+                .to(orderCreatedExchange)
+                .with(ORDER_CREATED_ROUTING_KEY);
     }
 }
