@@ -1,5 +1,6 @@
 package com.dispenser.envio_service.consumer;
 
+import com.dispenser.envio_service.config.RabbitMQConfig;
 import com.dispenser.envio_service.model.Envio;
 import com.dispenser.envio_service.service.EnvioService;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class EnvioConsumer {
             Envio savedEnvio = envioService.save(envio);
             logger.info("Envío creado para idDespacho {}: {}", idDespacho, savedEnvio);
 
-            // Simular envío (puedes reemplazar esto con lógica real)
+            // Simular envío
             if (LocalDateTime.now().isEqual(savedEnvio.getFechaDespacho()) || LocalDateTime.now().isAfter(savedEnvio.getFechaDespacho())) {
                 savedEnvio.setEstado("enviada");
                 savedEnvio.setFechaDespacho(LocalDateTime.now()); // Actualizar con la fecha real de envío
@@ -57,12 +58,17 @@ public class EnvioConsumer {
                 logger.info("Envío procesado para idDespacho {}: Estado = enviada", idDespacho);
 
                 // Enviar mensaje a despacho-service para actualizar
-                String updateMessage = String.format("idDespacho=%d,estado=enviada,fechaDespacho=%s",
+                String updateDespachoMessage = String.format("idDespacho=%d,estado=enviada,fechaDespacho=%s",
                         idDespacho, savedEnvio.getFechaDespacho());
-                rabbitTemplate.convertAndSend("despacho.update.exchange", "despacho.update", updateMessage);
-                logger.info("Mensaje enviado a despacho-service: {}", updateMessage);
+                rabbitTemplate.convertAndSend("despacho.update.exchange", "despacho.update", updateDespachoMessage);
+                logger.info("Mensaje enviado a despacho-service: {}", updateDespachoMessage);
 
-                // Enviar correo (placeholder, reemplazar con EmailService)
+                // Enviar mensaje a OrdenService para actualizar el estado
+                String updateOrderMessage = String.format("idOrden=%d,estado=Pagado y enviado", idOrden);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_UPDATE_EXCHANGE, RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY, updateOrderMessage);
+                logger.info("Mensaje enviado a OrdenService: {}", updateOrderMessage);
+
+                // Enviar correo
                 enviarCorreo(savedEnvio);
             }
         } catch (Exception e) {
@@ -71,7 +77,6 @@ public class EnvioConsumer {
     }
 
     private void enviarCorreo(Envio envio) {
-        // Placeholder para envío de correo
         String subject = "Detalles de tu envío - Orden #" + envio.getIdOrden();
         String body = String.format(
                 "Hola,\n\nTu orden #%d ha sido enviada.\n" +
@@ -84,6 +89,5 @@ public class EnvioConsumer {
                 envio.getIdOrden(), envio.getFechaDespacho(), envio.getEstado(),
                 envio.getDireccionEntrega(), envio.getCorreoUsuario());
         logger.info("Correo simulado enviado a {} - Asunto: {}, Cuerpo: {}", envio.getCorreoUsuario(), subject, body);
-        // Aquí deberías integrar un servicio de correo (ej. JavaMailSender)
     }
 }

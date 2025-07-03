@@ -1,17 +1,18 @@
 package com.dispenser.orders_service.service;
 
+import com.dispenser.orders_service.config.RabbitMQConfig;
 import com.dispenser.orders_service.model.Orden;
 import com.dispenser.orders_service.model.OrdenProducto;
 import com.dispenser.orders_service.repository.OrdenRepository;
-import com.dispenser.orders_service.config.RabbitMQConfig;
 import com.dispenser.orders_service.dto.ClienteDTO;
 import com.dispenser.orders_service.dto.OrdenProductoDTO;
 import com.dispenser.orders_service.dto.ProductoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrdenService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OrdenService.class);
 
     @Autowired
     private OrdenRepository ordenRepository;
@@ -63,12 +66,29 @@ public class OrdenService {
         savedOrden.updateProductIds();
 
         // Enviar mensaje a dispatch-service para crear despacho
-        String message = savedOrden.getIdOrden() + ",pendiente de pago";
+        String dispatchMessage = savedOrden.getIdOrden() + ",pendiente de pago";
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ORDER_CREATED_EXCHANGE,
                 RabbitMQConfig.ORDER_CREATED_ROUTING_KEY,
-                message
+                dispatchMessage
         );
+        logger.info("Mensaje enviado a {} con routing key {}: {}", RabbitMQConfig.ORDER_CREATED_EXCHANGE, RabbitMQConfig.ORDER_CREATED_ROUTING_KEY, dispatchMessage);
+
+        // Enviar mensaje para actualizar el stock de productos
+        if (!orden.getOrderProducts().isEmpty()) {
+            StringBuilder stockMessage = new StringBuilder();
+            for (OrdenProducto op : orden.getOrderProducts()) {
+                stockMessage.append(op.getIdProducto()).append(":").append(op.getCantidad()).append(",");
+            }
+            stockMessage.setLength(stockMessage.length() - 1); // Eliminar la última coma
+            String stockUpdateMessage = stockMessage.toString();
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.ORDER_PRODUCTS_EXCHANGE,
+                    RabbitMQConfig.ORDER_PRODUCTS_ROUTING_KEY,
+                    stockUpdateMessage
+            );
+            logger.info("Mensaje enviado a {} con routing key {}: {}", RabbitMQConfig.ORDER_PRODUCTS_EXCHANGE, RabbitMQConfig.ORDER_PRODUCTS_ROUTING_KEY, stockUpdateMessage);
+        }
 
         return savedOrden;
     }
@@ -107,7 +127,7 @@ public class OrdenService {
 
             // Si el estado es "cobrado", procesar ubicación y total de envío
             if ("cobrado".equalsIgnoreCase(ordenDetalles.getEstado()) && ordenDetalles.getProductos() != null) {
-                ClienteDTO cliente = orden.getCliente(); // Usar el cliente existente o obtenerlo si no está
+                ClienteDTO cliente = orden.getCliente();
                 if (cliente == null && orden.getIdCliente() != null) {
                     cliente = restTemplate.getForObject(CLIENTE_SERVICE_URL + orden.getIdCliente(), ClienteDTO.class);
                 }
@@ -124,8 +144,8 @@ public class OrdenService {
     }
 
     private double calcularTotalEnvio(Set<OrdenProductoDTO> productos, String ubicacionEntrega) {
-        double costoBasePorProducto = 5.0; // Costo fijo por producto
-        double costoDistancia = ubicacionEntrega != null ? ubicacionEntrega.length() * 0.5 : 0.0; // Simulación simple basada en longitud de la dirección
+        double costoBasePorProducto = 5.0;
+        double costoDistancia = ubicacionEntrega != null ? ubicacionEntrega.length() * 0.5 : 0.0;
         double costoTotalProductos = productos.stream().mapToInt(OrdenProductoDTO::getCantidad).sum() * costoBasePorProducto;
         return costoTotalProductos + costoDistancia;
     }

@@ -13,6 +13,10 @@ public class RabbitMQConfig {
     public static final String ENVIO_COMPLETED_EXCHANGE = "envio.completed.exchange";
     public static final String ENVIO_COMPLETED_ROUTING_KEY = "envio.completed";
 
+    public static final String ORDER_UPDATE_EXCHANGE = "order.update.exchange";
+    public static final String ORDER_UPDATE_ROUTING_KEY = "order.update";
+    public static final String ORDER_UPDATE_QUEUE = "order.update.queue";
+
     @Bean
     public Queue envioProcessQueue() {
         return new Queue(ENVIO_PROCESS_QUEUE, true);
@@ -34,6 +38,24 @@ public class RabbitMQConfig {
     @Bean
     public TopicExchange despachoUpdateExchange() {
         return new TopicExchange("despacho.update.exchange");
+    }
+
+    @Bean
+    public DirectExchange orderUpdateExchange() {
+        return new DirectExchange(ORDER_UPDATE_EXCHANGE);
+    }
+
+    @Bean
+    public Queue orderUpdateQueue() {
+        return QueueBuilder.durable(ORDER_UPDATE_QUEUE).build();
+    }
+
+    @Bean
+    public Binding orderUpdateBinding(Queue orderUpdateQueue, DirectExchange orderUpdateExchange) {
+        return BindingBuilder
+                .bind(orderUpdateQueue)
+                .to(orderUpdateExchange)
+                .with(ORDER_UPDATE_ROUTING_KEY);
     }
 
     @Bean

@@ -7,8 +7,6 @@ import {
   ShoppingCart, 
   ClipboardList, 
   Truck, 
-  Send, 
-  CreditCard,
   Menu,
   X,
   Building2
@@ -30,8 +28,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/cart', icon: <ShoppingCart size={20} />, label: 'Carrito', color: 'text-orange-600' },
     { path: '/orders', icon: <ClipboardList size={20} />, label: 'Órdenes', color: 'text-indigo-600' },
     { path: '/dispatch', icon: <Truck size={20} />, label: 'Despacho', color: 'text-yellow-600' },
-    { path: '/shipping', icon: <Send size={20} />, label: 'Envíos', color: 'text-teal-600' },
-    { path: '/payments', icon: <CreditCard size={20} />, label: 'Cobros', color: 'text-red-600' },
   ];
 
   const toggleMobileMenu = () => {

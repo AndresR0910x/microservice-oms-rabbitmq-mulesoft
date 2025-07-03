@@ -9,8 +9,8 @@ import java.util.Set;
 @Setter
 public class OrdenDTO {
     private Long idOrden;
-    private Long idCliente;
+    private ClienteDTO cliente; // Cambiado de idCliente a cliente para soportar getCliente()
     private String fecha;
     private String estado;
-    private Set<OrdenProductoDTO> orderProductos;
+    private Set<OrdenProductoDTO> orderProducts; // Cambiado de orderProductos a orderProducts para getOrderProducts()
 }

@@ -1,7 +1,5 @@
 package com.dispenser.cobro_service.dto;
 
-
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class OrdenProductoDTO {
     private Long idOrdenProducto;
-    private OrdenDTO orden;
+    private Long idOrden; // Cambiado de OrdenDTO a Long para evitar referencia cíclica
     private Long idProducto;
     private Integer cantidad;
 }

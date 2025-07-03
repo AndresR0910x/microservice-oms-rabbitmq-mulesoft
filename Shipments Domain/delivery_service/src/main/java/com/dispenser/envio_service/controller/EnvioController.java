@@ -3,9 +3,9 @@ package com.dispenser.envio_service.controller;
 import com.dispenser.envio_service.model.Envio;
 import com.dispenser.envio_service.service.EnvioService;
 import com.dispenser.envio_service.dto.OrdenDTO;
+import com.dispenser.envio_service.config.RabbitMQConfig;
 import com.dispenser.envio_service.dto.ClienteDTO;
 import com.dispenser.envio_service.dto.DespachoDTO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -56,15 +56,16 @@ public class EnvioController {
         Envio envio = new Envio();
         envio.setIdDespacho(idDespacho);
         envio.setIdOrden(idOrden);
-        envio.setFechaDespacho(LocalDateTime.now()); // Fecha actual de creación
-        envio.setEstado("enviada"); // Estado final
+        envio.setFechaDespacho(LocalDateTime.now());
+        envio.setEstado("enviada");
         envio.setDireccionEntrega(direccionEntrega);
         envio.setCorreoUsuario(correoUsuario);
         Envio savedEnvio = envioService.save(envio);
         logger.info("Envío creado para idOrden {}: {}", idOrden, savedEnvio);
 
-        // Actualizar el despacho
+        // Actualizar el despacho y la orden
         actualizarDespacho(savedEnvio);
+        actualizarOrden(savedEnvio);
 
         return ResponseEntity.ok(savedEnvio);
     }
@@ -85,9 +86,12 @@ public class EnvioController {
                 envio.getIdDespacho(), envio.getFechaDespacho());
         rabbitTemplate.convertAndSend("despacho.update.exchange", "despacho.update", updateMessage);
         logger.info("Mensaje enviado a despacho-service: {}", updateMessage);
+    }
 
-        // Enviar correo simulado
-        enviarCorreo(envio);
+    private void actualizarOrden(Envio envio) {
+        String updateOrderMessage = String.format("idOrden=%d,estado=Pagado y enviado", envio.getIdOrden());
+        rabbitTemplate.convertAndSend(RabbitMQConfig.ORDER_UPDATE_EXCHANGE, RabbitMQConfig.ORDER_UPDATE_ROUTING_KEY, updateOrderMessage);
+        logger.info("Mensaje enviado a OrdenService: {}", updateOrderMessage);
     }
 
     private void enviarCorreo(Envio envio) {

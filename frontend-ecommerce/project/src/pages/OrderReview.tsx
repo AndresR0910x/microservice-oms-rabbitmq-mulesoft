@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
@@ -32,7 +31,7 @@ interface OrderProduct {
 interface Order {
   idOrden: number;
   fecha: string;
-  estado: 'pendiente' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  estado: 'Pendiente' | 'Pagada' | 'Pagado y enviado';
   idCliente: number;
   cliente: Cliente;
   orderProducts: OrderProduct[];
@@ -59,7 +58,12 @@ const OrderReview: React.FC = () => {
           throw new Error(`Error al obtener órdenes: ${ordersResponse.statusText}`);
         }
         const ordersData = await ordersResponse.json();
-        setOrders(ordersData);
+        // Ajustar los estados si vienen de la API con nombres diferentes
+        const adjustedOrders = ordersData.map((order: any) => ({
+          ...order,
+          estado: mapApiStateToDisplayState(order.estado),
+        }));
+        setOrders(adjustedOrders);
 
         const productosResponse = await fetch('http://localhost:8080/api/productos');
         if (!productosResponse.ok) {
@@ -78,13 +82,27 @@ const OrderReview: React.FC = () => {
     fetchData();
   }, []);
 
+  // Función para mapear estados de la API a los estados de visualización
+  const mapApiStateToDisplayState = (apiState: string) => {
+    switch (apiState.toLowerCase()) {
+      case 'pendiente':
+      case 'pendiente de pago':
+        return 'Pendiente';
+      case 'pagada':
+        return 'Pagada';
+      case 'processing':
+      case 'shipped':
+        return 'Pagado y enviado';
+      default:
+        return apiState;
+    }
+  };
+
   const statusOptions = [
     { value: '', label: 'Todos los estados' },
-    { value: 'pendiente', label: 'Pendiente' },
-    { value: 'processing', label: 'En Proceso' },
-    { value: 'shipped', label: 'Enviado' },
-    { value: 'delivered', label: 'Entregado' },
-    { value: 'cancelled', label: 'Cancelado' }
+    { value: 'Pendiente', label: 'Pendiente' },
+    { value: 'Pagada', label: 'Pagada' },
+    { value: 'Pagado y enviado', label: 'Pagado y enviado' },
   ];
 
   const filteredOrders = orders.filter(order => {
@@ -98,12 +116,14 @@ const OrderReview: React.FC = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pendiente': return <Badge variant="warning">Pendiente</Badge>;
-      case 'processing': return <Badge variant="info">En Proceso</Badge>;
-      case 'shipped': return <Badge variant="info">Enviado</Badge>;
-      case 'delivered': return <Badge variant="success">Entregado</Badge>;
-      case 'cancelled': return <Badge variant="danger">Cancelado</Badge>;
-      default: return <Badge variant="default">{status}</Badge>;
+      case 'Pendiente':
+        return <Badge variant="warning">Pendiente</Badge>;
+      case 'Pagada':
+        return <Badge variant="info">Pagada</Badge>;
+      case 'Pagado y enviado':
+        return <Badge variant="success">Pagado y enviado</Badge>;
+      default:
+        return <Badge variant="default">{status}</Badge>;
     }
   };
 
@@ -141,7 +161,7 @@ const OrderReview: React.FC = () => {
 
       alert('Pago realizado con éxito');
       const updatedOrders = orders.map(o =>
-        o.idOrden === order.idOrden ? { ...o, estado: 'processing' } : o
+        o.idOrden === order.idOrden ? { ...o, estado: 'Pagada' } : o
       );
       setOrders(updatedOrders);
       setSelectedOrder(null);
@@ -277,14 +297,24 @@ const OrderReview: React.FC = () => {
                     ${getTotal(order).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      icon={<Eye size={16} />}
-                      onClick={() => setSelectedOrder(order)}
-                    >
-                      Ver Detalles
-                    </Button>
+                    {order.estado === 'Pendiente' ? (
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() => handlePayment(order)}
+                      >
+                        Pagar
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        icon={<Eye size={16} />}
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        Ver Detalles
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -376,7 +406,7 @@ const OrderReview: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                {selectedOrder.estado === 'pendiente' && (
+                {selectedOrder.estado === 'Pendiente' && (
                   <Button
                     variant="success"
                     size="lg"
@@ -393,13 +423,12 @@ const OrderReview: React.FC = () => {
       )}
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: 'Total Órdenes', value: orders.length, color: 'blue' },
-          { label: 'Pendientes', value: orders.filter(o => o.estado === 'pendiente').length, color: 'yellow' },
-          { label: 'En Proceso', value: orders.filter(o => o.estado === 'processing').length, color: 'indigo' },
-          { label: 'Entregadas', value: orders.filter(o => o.estado === 'delivered').length, color: 'green' },
-          { label: 'Canceladas', value: orders.filter(o => o.estado === 'cancelled').length, color: 'red' }
+          { label: 'Pendientes', value: orders.filter(o => o.estado === 'Pendiente').length, color: 'yellow' },
+          { label: 'Pagadas', value: orders.filter(o => o.estado === 'Pagada').length, color: 'indigo' },
+          { label: 'Pagado y enviado', value: orders.filter(o => o.estado === 'Pagado y enviado').length, color: 'green' },
         ].map((stat, index) => (
           <Card key={index} className="text-center">
             <div className={`text-2xl font-bold text-${stat.color}-600`}>{stat.value}</div>

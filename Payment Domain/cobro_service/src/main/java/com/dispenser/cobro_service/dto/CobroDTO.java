@@ -17,4 +17,5 @@ public class CobroDTO {
     private String transaccionId;
     private Double costoEnvio;
     private String moneda;
+    private Double montoTotal; // Agregado para soportar setMontoTotal en CobroService
 }

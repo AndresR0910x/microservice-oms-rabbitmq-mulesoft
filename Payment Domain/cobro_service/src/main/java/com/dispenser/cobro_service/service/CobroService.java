@@ -1,6 +1,7 @@
 package com.dispenser.cobro_service.service;
 
 import com.dispenser.cobro_service.model.Cobro;
+import com.dispenser.cobro_service.dto.*;
 import com.dispenser.cobro_service.repository.CobroRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ public class CobroService {
 
     private final String COBRO_COMPLETED_EXCHANGE = "cobro.completed.exchange";
     private final String COBRO_COMPLETED_ROUTING_KEY = "cobro.completed";
+    private final String ORDER_UPDATE_EXCHANGE = "order.update.exchange";
+    private final String ORDER_UPDATE_ROUTING_KEY = "order.update";
 
     public Cobro crearCobro(Long idOrden, Double monto, String metodoPago) {
         // Verificar si la orden ya está pagada en despacho
@@ -101,13 +104,26 @@ public class CobroService {
 
         cobroRepository.save(savedCobro);
 
-        // Publicar mensaje a RabbitMQ con estado, ubicación, totalEnvio y montoTotal
+        // Publicar mensaje a RabbitMQ para actualizar el estado de la orden
+        String orderUpdateMessage = String.format("idOrden=%d,estado=Pagado", savedCobro.getIdOrden());
+        rabbitTemplate.convertAndSend(
+            ORDER_UPDATE_EXCHANGE,
+            ORDER_UPDATE_ROUTING_KEY,
+            orderUpdateMessage
+        );
+        logger.info("Mensaje enviado a RabbitMQ - Exchange: {}, Routing Key: {}, Message: {}", ORDER_UPDATE_EXCHANGE, ORDER_UPDATE_ROUTING_KEY, orderUpdateMessage);
+
+        // Publicar mensaje a RabbitMQ para despacho
         Locale.setDefault(Locale.US); // Para evitar coma como separador decimal
-        String message = String.format(Locale.US,
+        String dispatchMessage = String.format(Locale.US,
             "Orden pagada - lista para enviar,idOrden=%d,ubicacion=%s,totalEnvio=%.2f,montoTotal=%.2f",
             savedCobro.getIdOrden(), ubicacionEntrega, totalEnvio, montoTotal);
-        rabbitTemplate.convertAndSend(COBRO_COMPLETED_EXCHANGE, COBRO_COMPLETED_ROUTING_KEY, message);
-        logger.info("Mensaje enviado a RabbitMQ - Exchange: {}, Routing Key: {}, Message: {}", COBRO_COMPLETED_EXCHANGE, COBRO_COMPLETED_ROUTING_KEY, message);
+        rabbitTemplate.convertAndSend(
+            COBRO_COMPLETED_EXCHANGE,
+            COBRO_COMPLETED_ROUTING_KEY,
+            dispatchMessage
+        );
+        logger.info("Mensaje enviado a RabbitMQ - Exchange: {}, Routing Key: {}, Message: {}", COBRO_COMPLETED_EXCHANGE, COBRO_COMPLETED_ROUTING_KEY, dispatchMessage);
 
         return savedCobro;
     }
@@ -137,70 +153,4 @@ public class CobroService {
     private String generateTransactionId() {
         return "TXN-" + System.currentTimeMillis();
     }
-}
-
-// DTOs
-class OrdenDTO {
-    private Long idOrden;
-    private String fecha;
-    private String estado;
-    private Long idCliente;
-    private ClienteDTO cliente;
-    private Set<OrdenProductoDTO> orderProducts = new HashSet<>();
-
-    // Getters y setters
-    public Long getIdOrden() { return idOrden; }
-    public void setIdOrden(Long idOrden) { this.idOrden = idOrden; }
-    public String getFecha() { return fecha; }
-    public void setFecha(String fecha) { this.fecha = fecha; }
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
-    public Long getIdCliente() { return idCliente; }
-    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
-    public ClienteDTO getCliente() { return cliente; }
-    public void setCliente(ClienteDTO cliente) { this.cliente = cliente; }
-    public Set<OrdenProductoDTO> getOrderProducts() { return orderProducts; }
-    public void setOrderProducts(Set<OrdenProductoDTO> orderProducts) { this.orderProducts = orderProducts; }
-}
-
-class ClienteDTO {
-    private Long idCliente;
-    private String nombre;
-    private String direccion;
-    private String contacto;
-
-    // Getters y setters
-    public Long getIdCliente() { return idCliente; }
-    public void setIdCliente(Long idCliente) { this.idCliente = idCliente; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
-    public String getContacto() { return contacto; }
-    public void setContacto(String contacto) { this.contacto = contacto; }
-}
-
-class OrdenProductoDTO {
-    private Long idOrdenProducto;
-    private Long idProducto;
-    private Integer cantidad;
-
-    // Getters y setters
-    public Long getIdOrdenProducto() { return idOrdenProducto; }
-    public void setIdOrdenProducto(Long idOrdenProducto) { this.idOrdenProducto = idOrdenProducto; }
-    public Long getIdProducto() { return idProducto; }
-    public void setIdProducto(Long idProducto) { this.idProducto = idProducto; }
-    public Integer getCantidad() { return cantidad; }
-    public void setCantidad(Integer cantidad) { this.cantidad = cantidad; }
-}
-
-class DespachoDTO {
-    private Long idOrden;
-    private String estado;
-
-    // Getters y setters
-    public Long getIdOrden() { return idOrden; }
-    public void setIdOrden(Long idOrden) { this.idOrden = idOrden; }
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
 }
